@@ -1,0 +1,51 @@
+Q1. You have a table with the following 3 columns //Link --> http://thedatamonk.com/question/case-study-in-sql/
+
+customer_id, order_id, order_date
+123          987       2/9/2020
+123          1234      4/9/2020
+456          1211      1/1/2019
+456          2344      8/8/2020
+
+We want to know the number of customer who have their first two orders in the last 180 days. In the above example 123 will qualify but 456 won’t qualify
+
+A1. SELECT count(customer_id) FROM
+(SELECT customer_id, TotalRows FROM
+(SELECT customer_id, COUNT(order_id) As totalRows
+FROM table
+GROUP BY customer_id
+HAVING MIN(order_date) >= DATEADD(day, -180, GetDate())) As t1
+WHERE TotalRows >= 2) As t2
+
+Q2. Pivot a table in SQL without using pivot function //Link --> http://thedatamonk.com/question/pivot-a-table-in-sql-without-using-pivot-function/
+Suppose there are two columns
+Age Name
+25   Nitin
+30   Amit
+27   Rishab
+29   Ankush
+
+Convert into
+Name.  Nitin.  Amit. Rishab. Ankush
+Age.   25.     30.   27.     29
+
+A2. With CTE As
+(SELECT Age, Name, ROW_NUMBER() OVER() As Row_Number
+FROM table)
+SELECT
+MAX(CASE Name WHEN ‘Nitin’ Then Age End) Nitin,
+MAX(CASE Name WHEN ‘Amit’ Then Age End) Amit,
+MAX(CASE Name WHEN ‘Rishab’ Then Age End) Rishab,
+MAX(CASE Name WHEN ‘Ankush’ Then Age End) Ankush
+FROM CTE
+GROUP BY Row_Number
+
+Q3. Create a ranking row without using Rank function in SQL //Link --> http://thedatamonk.com/question/create-a-ranking-row-without-using-rank-function-in-sql/
+
+You have to create one more column in predefined table with Name, Id,Department, and Salary.
+Now you have to create new column with Rank in it partition by Department
+
+A3. SELECT Name, Id, Department, Salary,
+(SELECT COUNT(*) + 1 FROM Emp A
+WHERE A.Department = B.Department AND A.Salary > B.Salary) As Rank
+FROM Emp B
+ORDER BY Department, Salary DESC
